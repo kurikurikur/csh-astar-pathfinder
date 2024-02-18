@@ -10,7 +10,17 @@ namespace pathfinder
     {        
         public static void Main(string[] args)
         {
-            //init map
+            // Clear Console
+            try
+            {
+                Console.Clear();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            // init map
+            // we need to create grids that have 1-2 false depth as walls to ensure algorithm don't go out of bounds.
             bool[,] mapGrid = {
                 {true, true, true, false, true, true, true}, 
                 {true, true, true, false, true, true, true},
@@ -35,16 +45,29 @@ namespace pathfinder
 
             // get user input of which starting & end coordinate?
             // example first start at 0,0
-            Coords startCoord = new Coords(0, 0);
-            Coords endCoord = new Coords(3, 6);
+            Coords startCoord = new Coords(1, 1);
+            Coords endCoord = new Coords(5, 3);
             List<Node> nodes = new List<Node>();
+            Node currentPos = new Node();
+            
             nodes = NodeCoordinateInit(mapGrid);
+            // Console.WriteLine("Processed Raw Nodes: " + nodes.Count);
 
             //check coord out of bound
             try
             {
-                bool _boundtest = mapGrid[startCoord.X, startCoord.Y];
-                _boundtest = mapGrid[endCoord.X, endCoord.Y];
+                bool _boundtest = mapGrid[startCoord.Y, startCoord.X];
+                if (_boundtest == false)
+                {
+                    Console.WriteLine("COORDINATE SELECTED IS WALL!");
+                    System.Environment.Exit(1);
+                }
+                _boundtest = mapGrid[endCoord.Y, endCoord.X];
+                if (_boundtest == false)
+                {
+                    Console.WriteLine("COORDINATE SELECTED IS WALL!");
+                    System.Environment.Exit(1);
+                }
             }
             catch (Exception e)
             {
@@ -52,7 +75,10 @@ namespace pathfinder
                 Console.WriteLine(e);
             }
 
+            Console.WriteLine("Map grid OK, nodes initialised!");
             PathSearch(nodes, startCoord, endCoord);
+
+            System.Environment.Exit(1);
 
         } 
 
@@ -61,70 +87,164 @@ namespace pathfinder
             //SEARCH START
             // get start and end node information?
             List<Node> startNodeL = nodes.FindAll(x => x.Location == startCoord);
+            //test
+            //Console.WriteLine(startNodeL.Count);
+
             Node startNode = startNodeL[0];
 
             List<Node> endNodeL = nodes.FindAll(x => x.Location == endCoord);
+            //Console.WriteLine(endNodeL.Count);
             Node endNode = endNodeL[0];
-
-            Node currentNode = new Node();
-
-            //Initial
-            currentNode = startNode;
 
             // Open List of nodes to be considered
             List<Node> openNodes = new List<Node>();
             List<Node> closedNodes = new List<Node>();
             List<Node> walkableNodes = new List<Node>();
 
+            Node currentNode = new Node();
+
+            bool isArrived = false;
+            int stepCount = 0;
+
+
+            Console.WriteLine("Current Position Init!");
+            currentNode = startNode;
             // Add starting node to open list.
             openNodes.Add(currentNode);
 
-            // Add walkable nodes adjacent to starting point to open list.
-            // get walkable nodes
-            walkableNodes = GetAdjacentWalkableNodes(currentNode, nodes);
-            openNodes.AddRange(walkableNodes);
-            
-
-            // add initial start node as parent node to openNodes.
-            foreach (Node n in openNodes)
+            // Loop until we get to the target location
+            while(!isArrived)
             {
-                // set open state
-                n.State = NodeState.Open;
+                Console.WriteLine("Current Position: " + currentNode.Location.X + 
+                                    "X, " + currentNode.Location.Y + "Y.");
+                
+                // Counting steps
+                
+                Console.WriteLine("Step Count: " + stepCount);
+                stepCount += 1;
 
-                if (n.Location != currentNode.Location)
+
+                // Add walkable nodes adjacent to starting point to open list.
+                // get walkable nodes & open nodes
+                walkableNodes = GetAdjacentWalkableNodes(currentNode, nodes, closedNodes);
+                openNodes.AddRange(walkableNodes);
+                // Console.WriteLine("openNodes add walkable nodes count: "+openNodes.Count);
+                
+                // add initial start node as parent node to openNodes.
+                foreach (Node n in openNodes.ToList())
                 {
-                    n.ParentNode = currentNode;
+                    
+
+                    if (n.Location != currentNode.Location)
+                    {
+                        n.ParentNode = currentNode;
+                    }
+
+                    if (n.Location == currentNode.Location)
+                    {
+                        // remove start node from open Nodes, add the node into closedNodes.
+                        //closedNodes.Add(n);
+                        openNodes.Remove(n);
+                    }
+
+                    // else if ((currentNode.ParentNode != null) && (n.Location == currentNode.ParentNode.Location))
+                    // {
+                    //     // remove start node from open Nodes, add the node into closedNodes.
+                    //     closedNodes.Add(n);
+                    //     openNodes.Remove(n);
+                    // }
+
+                    
+                    // set open state
+                    n.State = NodeState.Open;
                 }
+                closedNodes.Add(currentNode);
+
+                // close state in closeNodes
+                foreach (Node n in closedNodes)
+                {
+                    n.State = NodeState.Closed;
+                }
+                
+
+                // calculate F G H now we know starting & end coordinate.
+                // Console.WriteLine("openNodes count: "+openNodes.Count);
+                // Console.WriteLine("closedNodes count: "+closedNodes.Count);
+                openNodes = FGHCalculate(openNodes, currentNode, endNode);
+                // Console.WriteLine("openNodes count after calc: "+openNodes.Count);
+                // if no more open nodes, then no path
+                if (openNodes.Count == 0)
+                {
+                    Console.WriteLine("No more open path!");
+                    break;
+                }
+
+                // find lowest F then assign that as current Node.
+                openNodes.Sort((p, q) => p.F.CompareTo(q.F));
+                // Console.WriteLine("F G H first 3 nodes: ");
+                Console.WriteLine("F: " + openNodes[0].F + " G: " + openNodes[0].G + " H: " + openNodes[0].H);
+                // Console.WriteLine("F: " + openNodes[1].F + " G: " + openNodes[1].G + " H: " + openNodes[1].H);
+                // Console.WriteLine("F: " + openNodes[2].F + " G: " + openNodes[2].G + " H: " + openNodes[2].H);
+
+                currentNode = openNodes[0];
+
+                //Initialize openNodes after each step
+                openNodes.Clear();
+                walkableNodes.Clear();
+
+                // check if node has arrived to location
+                if (currentNode.Location == endNode.Location)
+                {
+                    isArrived = true;
+                    Console.WriteLine("Character has arrived at end location @" + currentNode.Location.X + "X, " + currentNode.Location.Y + "Y!");
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Character moved!");
+                }
+
+                Thread.Sleep(250);
             }
-
-            // remove start node from open Nodes, add the node into closedNodes.
-            closedNodes.Add(openNodes[0]);
-            openNodes.RemoveAt(0);
-
-            // calculate F G H now we know starting & end coordinate.
-            openNodes = FGHCalculate(openNodes, currentNode, endNode);
-
-            // find lowest F then assign that as current Node.
-            // 
         }
 
         //static method for getting nodes coordinate & walkable status of each nodes.
         //from top to bottom, left to right
         private static List<Node> NodeCoordinateInit(bool[,] mapArray)
         {
+            Console.WriteLine("Node Grid Conversion started...");
+            Console.WriteLine("Map Array:");
+            for (int row = 0; row<mapArray.GetLength(0); row++)
+            {
+                for (int col = 0; col<mapArray.GetLength(1); col++)
+                {
+                    Console.Write(mapArray[row,col] + "\t");
+                }
+                Console.WriteLine("");
+                
+            }
+            Console.WriteLine("Map Height: " + mapArray.GetLength(0));
+            Console.WriteLine("Map Length: " + mapArray.GetLength(1));
+
             int mapHeight = mapArray.GetLength(0);
             int mapLength = mapArray.GetLength(1);
+            //List<Node> nodes = new List<Node>(new Node[mapHeight*mapLength]);
             List<Node> nodes = new List<Node>(mapHeight*mapLength);
+            //populate nodes
+            for (int i = 0; i<(mapHeight*mapLength); i++) {nodes.Add(new Node());}
 
+            Console.WriteLine("Total Grid Elements: " + nodes.Count);
             // reverse y axis vs array pos
             // use coords struct, init
             Coords _mapLoc = new Coords(0, 0);
             int r = mapHeight-1;
+            int trueRow = 0;
             int c = 0;
 
             // get all node data, fill loop
             // fill y coordinate
             // fill walkable status (true / false)
+            int nodeIndex = 0;
             foreach (Node n in nodes)
             {
                 // if row is lesser than map height, increment r. else, incremet c, reset r
@@ -132,39 +252,60 @@ namespace pathfinder
                 if (r >= 0 && c < mapLength)
                 {
                     // logs coordinate. for y axis, reverse array from mapHeight to 0, coordinate from 0 to mapHeight.
+                    _mapLoc.X = c;
                     _mapLoc.Y = r;
                     // fill walkable status
-                    n.isWalkable = mapArray[r,c];
+                    n.isWalkable = mapArray[trueRow,c];
                     r -= 1;
+                    trueRow += 1;
+                    
                     
                 }
                 else if(c < mapLength)
                 {
-                    _mapLoc.X = c;
-                    n.isWalkable = mapArray[r,c];
-                    c += 1;
-                    
-
                     //init
                     r = mapHeight-1;
+                    trueRow = 0;
+                    c += 1;
+
+                    _mapLoc.X = c;
+                    _mapLoc.Y = r;
+                    
+                    n.isWalkable = mapArray[trueRow,c];
+                    
+                    r -= 1;
+                    trueRow += 1;
+                    
                 }
                 else
                 {
                     //init, after all nodes are cycled.
                     r = mapHeight-1;
+                    trueRow = 0;
                     c = 0;
+                    Console.WriteLine("Counter init");
+
                 }
                 //assign coord of the node, then go to next node.
                 n.Location = _mapLoc;
+                
+                nodeIndex += 1;
+                
+                // Console.WriteLine("Node number: " + nodeIndex);
+                // Console.WriteLine("X: " + n.Location.X + " & Y: " + n.Location.Y);
+                // Console.WriteLine("Walkable? :" + n.isWalkable);
+                
             }
+            Console.WriteLine("Nodes finished");
+            
             return nodes;
         }
 
         private static List<Node> FGHCalculate(List<Node> adjacentNodes, Node fromNode, Node toNode)
         {
             //set adjacent terrain cost
-            double gOrtho = 10.0;
-            double gDiag = 14.0;
+            double gOrtho = 1.00;
+            double gDiag = 1.40;
             
 
             List<Node> _orthoNodes = new List<Node>();
@@ -183,7 +324,7 @@ namespace pathfinder
             x => ((x.Location.X == fromNode.Location.X+1) && (x.Location.Y == fromNode.Location.Y+1)) 
             || ((x.Location.X == fromNode.Location.X-1) && (x.Location.Y == fromNode.Location.Y-1))
             || ((x.Location.X == fromNode.Location.X+1) && (x.Location.Y == fromNode.Location.Y-1))
-            || ((x.Location.X == fromNode.Location.X+1) && (x.Location.Y == fromNode.Location.Y+1))
+            || ((x.Location.X == fromNode.Location.X-1) && (x.Location.Y == fromNode.Location.Y+1))
             );
 
             //set G in the lists - basic adjacent terrain cost
@@ -214,7 +355,7 @@ namespace pathfinder
             return outputNodes;            
         }
 
-        private static List<Node> GetAdjacentWalkableNodes(Node fromNode, List<Node> nodeL)
+        private static List<Node> GetAdjacentWalkableNodes(Node fromNode, List<Node> nodeL, List<Node> nodeClosedL)
         {
             //get adjacent nodes with true in isWalkables
             
@@ -229,10 +370,22 @@ namespace pathfinder
                 || ((x.Location.X == fromNode.Location.X+1) && (x.Location.Y == fromNode.Location.Y+1)) 
                 || ((x.Location.X == fromNode.Location.X-1) && (x.Location.Y == fromNode.Location.Y-1))
                 || ((x.Location.X == fromNode.Location.X+1) && (x.Location.Y == fromNode.Location.Y-1))
-                || ((x.Location.X == fromNode.Location.X+1) && (x.Location.Y == fromNode.Location.Y+1))
+                || ((x.Location.X == fromNode.Location.X-1) && (x.Location.Y == fromNode.Location.Y+1))
                 );
 
-            walkableNodes = nodeL.FindAll(x => x.isWalkable == true);
+            // if node is closed, then it is not walkable
+            foreach (Node n in adjacentNodes.ToList())
+            {
+                foreach (Node r in nodeClosedL)
+                {
+                    if (n.Location == r.Location)
+                    {
+                        adjacentNodes.Remove(n);
+                    }
+                }
+            }
+
+            walkableNodes.AddRange(adjacentNodes.FindAll(x => x.isWalkable == true));
             
             return walkableNodes;
         }
@@ -289,18 +442,6 @@ namespace pathfinder
             int hashcode = 0;
             return hashcode;
         }
-    }
-
-    
-
-    public class SearchParameters
-    {
-        public Coords StartLocation { get; set;}
-        public Coords EndLoc { get; set;}
-        public bool[,] Map { get; set;}
-
-        
-
     }
 
     public class Node

@@ -12,3 +12,4 @@ D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\refint\Csh
 D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.pdb
 D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.genruntimeconfig.cache
 D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\ref\CshPlayground.dll
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.sourcelink.json
