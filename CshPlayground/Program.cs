@@ -48,6 +48,7 @@ namespace pathfinder
             // example first start at 0,0
             Coords startCoord = new Coords(1, 1);
             Coords endCoord = new Coords(5, 3);
+            int minPassage = 2;
             List<Node> nodes = new List<Node>();
             List<Node> savedPathNodes = new List<Node>();
             List<Node> pivotNodes = new List<Node>();
@@ -55,7 +56,7 @@ namespace pathfinder
             Node pivotNode = new Node();
 
             
-            nodes = NodeCoordinateInit(mapGrid);
+            nodes = NodeCoordinateInit(mapGrid, minPassage);
             pivotNodes.AddRange(nodes.FindAll(x => x.isPivot));
             Console.WriteLine("Pivot Count: " + pivotNodes.Count);
 
@@ -244,7 +245,7 @@ namespace pathfinder
 
         //static method for getting nodes coordinate & walkable status of each nodes.
         //from top to bottom, left to right
-        private static List<Node> NodeCoordinateInit(bool[,] mapArray)
+        private static List<Node> NodeCoordinateInit(bool[,] mapArray, int minPassage)
         {
             Console.WriteLine("Node Grid Conversion started...");
             Console.WriteLine("Map Array:");
@@ -300,7 +301,7 @@ namespace pathfinder
                         rpivotTrueCount += 1;
                     }
                     //if whole row only has walkable path less than 2
-                    if (r == -1 && rpivotTrueCount <= 2)
+                    if (r == -1 && rpivotTrueCount <= minPassage)
                     {
                         n.isPivot = true;
                     }
@@ -326,7 +327,7 @@ namespace pathfinder
                         cpivotTrueCount += 1;
                     }
                     //if whole row only has walkable path less than 2
-                    if (c == mapLength && cpivotTrueCount <= 2)
+                    if (c == mapLength && cpivotTrueCount <= minPassage)
                     {
                         n.isPivot = true;
                     }

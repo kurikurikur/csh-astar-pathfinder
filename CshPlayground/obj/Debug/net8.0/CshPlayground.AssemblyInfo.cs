@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CshPlayground")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d7ef872a01086c62b78d7acc942511de25b1abad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a01b113d5b0618724c30fa8a48cc79de1e2d55e6")]
 [assembly: System.Reflection.AssemblyProductAttribute("CshPlayground")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CshPlayground")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
