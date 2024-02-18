@@ -1,0 +1,14 @@
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.GeneratedMSBuildEditorConfig.editorconfig
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.AssemblyInfoInputs.cache
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.AssemblyInfo.cs
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.csproj.CoreCompileInputs.cache
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\bin\Debug\net8.0\CshPlayground.exe
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\bin\Debug\net8.0\CshPlayground.deps.json
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\bin\Debug\net8.0\CshPlayground.runtimeconfig.json
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\bin\Debug\net8.0\CshPlayground.dll
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\bin\Debug\net8.0\CshPlayground.pdb
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.dll
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\refint\CshPlayground.dll
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.pdb
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\CshPlayground.genruntimeconfig.cache
+D:\Google Drive\Google Drive\Work\Code\CshPlayground\obj\Debug\net8.0\ref\CshPlayground.dll
