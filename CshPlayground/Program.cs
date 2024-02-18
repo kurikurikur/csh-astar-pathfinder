@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Drawing;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 
@@ -48,10 +49,15 @@ namespace pathfinder
             Coords startCoord = new Coords(1, 1);
             Coords endCoord = new Coords(5, 3);
             List<Node> nodes = new List<Node>();
+            List<Node> savedPathNodes = new List<Node>();
+            List<Node> pivotNodes = new List<Node>();
             Node currentPos = new Node();
+            Node pivotNode = new Node();
+
             
             nodes = NodeCoordinateInit(mapGrid);
-            // Console.WriteLine("Processed Raw Nodes: " + nodes.Count);
+            pivotNodes.AddRange(nodes.FindAll(x => x.isPivot));
+            Console.WriteLine("Pivot Count: " + pivotNodes.Count);
 
             //check coord out of bound
             try
@@ -76,16 +82,42 @@ namespace pathfinder
             }
 
             Console.WriteLine("Map grid OK, nodes initialised!");
-            PathSearch(nodes, startCoord, endCoord);
+            if (pivotNodes.Count > 0)
+            {
+                Console.WriteLine("Using passageway pathfinding");
+                Node endNode = new Node();
+                endNode = nodes.Find(x => x.Location == endCoord);
+
+                //use smaller F
+                foreach (Node n in pivotNodes)
+                {
+                    //pythagoras
+                    n.G = 10;
+                    n.H = Math.Sqrt(Math.Pow(endNode.Location.X - n.Location.X, 2) + Math.Pow(endNode.Location.Y - n.Location.Y, 2));
+                    //F set in node class
+                }
+
+                pivotNodes.Sort((p, q) => p.F.CompareTo(q.F));
+                Console.WriteLine("Pivot Coordinate: " + pivotNodes[0].Location.X + "X, " + pivotNodes[0].Location.Y + "Y.");
+                savedPathNodes.AddRange(PathSearch(nodes, startCoord, pivotNodes[0].Location));
+                savedPathNodes.AddRange(PathSearch(nodes, pivotNodes[0].Location, endCoord));
+                
+            }
+            else
+            {
+                savedPathNodes.AddRange(PathSearch(nodes, startCoord, endCoord));
+            }
+            
 
             System.Environment.Exit(1);
 
         } 
 
-        private static void PathSearch(List<Node> nodes, Coords startCoord, Coords endCoord)
+        private static List<Node> PathSearch(List<Node> nodes, Coords startCoord, Coords endCoord)
         {
             //SEARCH START
             // get start and end node information?
+            List<Node> savedNodes = new List<Node>();
             List<Node> startNodeL = nodes.FindAll(x => x.Location == startCoord);
             //test
             //Console.WriteLine(startNodeL.Count);
@@ -187,6 +219,7 @@ namespace pathfinder
                 // Console.WriteLine("F: " + openNodes[2].F + " G: " + openNodes[2].G + " H: " + openNodes[2].H);
 
                 currentNode = openNodes[0];
+                savedNodes.Add(currentNode);
 
                 //Initialize openNodes after each step
                 openNodes.Clear();
@@ -206,6 +239,7 @@ namespace pathfinder
 
                 Thread.Sleep(250);
             }
+            return savedNodes;
         }
 
         //static method for getting nodes coordinate & walkable status of each nodes.
@@ -240,6 +274,8 @@ namespace pathfinder
             int r = mapHeight-1;
             int trueRow = 0;
             int c = 0;
+            int rpivotTrueCount = 0;
+            int cpivotTrueCount = 0;
 
             // get all node data, fill loop
             // fill y coordinate
@@ -258,6 +294,17 @@ namespace pathfinder
                     n.isWalkable = mapArray[trueRow,c];
                     r -= 1;
                     trueRow += 1;
+
+                    if (n.isWalkable)
+                    {
+                        rpivotTrueCount += 1;
+                    }
+                    //if whole row only has walkable path less than 2
+                    if (r == -1 && rpivotTrueCount <= 2)
+                    {
+                        n.isPivot = true;
+                    }
+
                     
                     
                 }
@@ -265,6 +312,8 @@ namespace pathfinder
                 {
                     //init
                     r = mapHeight-1;
+                    
+                    rpivotTrueCount = 0;
                     trueRow = 0;
                     c += 1;
 
@@ -272,7 +321,16 @@ namespace pathfinder
                     _mapLoc.Y = r;
                     
                     n.isWalkable = mapArray[trueRow,c];
-                    
+                    if (n.isWalkable)
+                    {
+                        cpivotTrueCount += 1;
+                    }
+                    //if whole row only has walkable path less than 2
+                    if (c == mapLength && cpivotTrueCount <= 2)
+                    {
+                        n.isPivot = true;
+                    }
+
                     r -= 1;
                     trueRow += 1;
                     
@@ -456,6 +514,7 @@ namespace pathfinder
         public double F {get {return this.G + this.H;}}
         public NodeState State {get; set;}
         public Node? ParentNode {get; set;}
+        public bool isPivot {get; set;}
         
     }
 
